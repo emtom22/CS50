@@ -6,6 +6,9 @@
 #include <cs50.h>
 #include "vigenere.c"
 
-int main(){
-	
+// Tester for pset1-credit functions
+int main() {
+	assert(true && true);
+	assert(true && true);
+	// assert(false && "My 1st unit test");
 }
