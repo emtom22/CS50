@@ -52,7 +52,7 @@ int main(int argc, string argv[])
 	}
 	
 	// Ask user for message to encrypt
-	string plaintext = get_string("Input text to encrypt: ");
+	string plaintext = get_string("plaintext: ");
 	int text_len = strlen(plaintext);
 
 	// Copy text into ciphertext to iterate through
@@ -60,7 +60,7 @@ int main(int argc, string argv[])
 
 	// Iterate over entire text that needs encrypting
 	encrypt(ciphertext, keyword, text_len, keyword_len);
-	printf("Ciphertext is: %s\n", ciphertext);
+	printf("ciphertext: %s\n", ciphertext);
 }
 
 
