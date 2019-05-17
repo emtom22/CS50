@@ -64,8 +64,8 @@ DESCRIPTION
 
 */
 int main(int argc, string argv[]){
-	printf("a encrypted with salt ab is %s\n", crypt("a", "ab"));
-	printf("a encrypted with salt AB is %s\n", crypt("a", "AB"));
+       // printf("a encrypted with salt ab is %s\n", crypt("a", "ab"));
+	// printf("a encrypted with salt AB is %s\n", crypt("a", "AB"));
 
 	// 312k possibilities with 5 char with upper/lower case alpha restrictions 50^5 
 	// this formula is (possible letter value ^ # of letters in password)
@@ -73,6 +73,40 @@ int main(int argc, string argv[]){
 	// what about the salt, what is the salt?
 	// The salt is always the first 2 characters of the hash
 	// with DES encryption the salt will be upper/lower alpha only
+       
+       // Ensure user inputs password to encrypt
+       if(argc != 2){
+              printf("Please input 1-5 upper/lowercase alpha only password.\n");
+              return 1;
+       }
 
+       string input_pw = argv[1];
+       int pw_len = strlen(input_pw);
+
+       // Ensure password is all alpha
+       for(int i = 0; i < pw_len; i++){
+              if(!isalpha(input_pw[i])){
+                     printf("Please input 1-5 upper/lowercase alpha only password.\n");
+                     return 1;
+              }
+       }
+
+       // Show user encrypted hash password
+       string salt = get_string("What 2 alpha character key do you want to encrypt your password with? ");
+       
+       // Ensure salt is all alpha
+       for(int i = 0, len = strlen(salt); i < len; i++){
+              if(len != 2){
+                     printf("Please input 2 upper/lowercase alpha only key.\n");
+                     return 1; 
+              }
+              if(!isalpha(salt[i])){
+                     printf("Please input 2 upper/lowercase alpha only key.\n");
+                     return 1;
+              }
+       }
+
+       string hash_pw = crypt(input_pw, salt);
+       printf("your hashed password is: %s\n", hash_pw);
 	exit(0);
 }
