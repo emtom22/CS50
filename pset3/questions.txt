@@ -1,36 +1,37 @@
 # Questions
 
 ## What's `stdint.h`?
-
-TODO
+    > this is the library for defining the number of bits that the int data type occupies 
 
 ## What's the point of using `uint8_t`, `uint32_t`, `int32_t`, and `uint16_t` in a program?
-
-TODO
+    > to be able to scan a file in a predefined bit batch
 
 ## How many bytes is a `BYTE`, a `DWORD`, a `LONG`, and a `WORD`, respectively?
+    > BYTE = 1 (8 bits)
+    > DWORD = 4 (32 bits)
+    > LONG = 4 (32 bits)
+    > WORD = 2 (16 bits)
 
-TODO
 
 ## What (in ASCII, decimal, or hexadecimal) must the first two bytes of any BMP file be? Leading bytes used to identify file formats (with high probability) are generally called "magic numbers."
+    > hexadecimal = 0x4d42
+    > decimal = 20,034 (4096*4 + 256*14 + 16*4 + 1*2)
 
-TODO
 
 ## What's the difference between `bfSize` and `biSize`?
-
-TODO
+    > bfSize = file header
+    > biSize = file info
+    > both are at the beginning of a bmp that defines some metadata attributes
 
 ## What does it mean if `biHeight` is negative?
-
-TODO
+    > negative 'biHeight' means the bits of the image are ordered from top-down with origin at top left
+    > positive 'biHeight' means the bits of the image are ordered from bottom-up with origin at bottom left
 
 ## What field in `BITMAPINFOHEADER` specifies the BMP's color depth (i.e., bits per pixel)?
-
-TODO
+    > biBitCount
 
 ## Why might `fopen` return `NULL` in `copy.c`?
-
-TODO
+    > if the file is already open?
 
 ## Why is the third argument to `fread` always `1` in our code?
 
