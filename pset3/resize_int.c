@@ -81,100 +81,71 @@ int main(int argc, char *argv[])
         printf("Unsupported file format.\n");
         return 4;
     }
+		
+	// Create new BITMAP headers
+	BITMAPFILEHEADER bf_new = bf; // Does this copy or just create a pointer to the same?
+	BITMAPINFOHEADER bi_new = bi; // Does this copy or just create a pointer to the same?
 
+	// Resize file info variables
+	bi_new.biWidth =* resize;
+	bi_new.biHeight =* resize;
+	
+	// Determine if any padding needed for width
+	int padding = (4 - (bi_new.biWidth * sizeof(RGBTRIPLE)) % 4) % 4;
+	
+	bi_new.biSizeImage = abs((bi_new.biWidth + padding) * bi_new.biHeight);
+		
+	// Resize file header variables
+	bf_new.biSize = sizeof(bf_new) + sizeof(bi_new) + bi_new.biSizeImage;
+	
     // write outfile's BITMAPFILEHEADER
-    fwrite(&bf, sizeof(BITMAPFILEHEADER), 1, outptr);
+    fwrite(&bf_new, sizeof(BITMAPFILEHEADER), 1, outptr);
 
     // write outfile's BITMAPINFOHEADER
-
-    // modify outfile bitmap info header
-    // width = round(bi.biWidth * resize + 0.5)
-    // bi.biHeight  = round(bi.biHeight * resize + 0.5)
-    // size = bi.biHeight * bi.biWidth
-
-    fwrite(&bi, sizeof(BITMAPINFOHEADER), 1, outptr);
-
-
-    // determine padding for scanlines
-    // padding will change according to the resize.
-    /*
-    say width is 10 pixels
-    that would be a padding of 2 (4 + 4 + 2 with 2 padding since its group of 4)
-    say multiple width by 2 (20 % 4 = 0, so 0 padding)
-    say multiply width by 2.25 (22.5), round this up to 23 (23 % 4 = 1, so 1 padding)
-
-    */
-    // padding:
-    // say it is 10 pixels
-    
-
-    int padding = (4 - (bi.biWidth * sizeof(RGBTRIPLE)) % 4) % 4;
+    fwrite(&bi_new, sizeof(BITMAPINFOHEADER), 1, outptr);
 
     // START RESIZING HERE
-    /**
-     * for every digit do "decimal place (ie 10, 100, 1000, / digit"
-     * 
-     * for 2.49 it would be
-     * 10/4 = 2 --> dupe every 2nd digit then when count is 4, skip to 10 and start at
-     *              1 again
-     * 100/9 = 11  --> dupe every 11th digit, then when it hits 100 and start at 1 again
-     *  
-     * 
-     * **/
-    // TO-DO
 
     // iterate over infile's scanlines
-    for (int i = 0, biHeight = abs(bi.biHeight); i < biHeight; i++)
-    {
-        // Set the pixel col
-        if(pixel_col > HUNDRETH){
-            pixel_col = 0;
-        }
-        pixel_col++;
+	for (int i = 0, biHeight = abs(bi.biHeight); i < biHeight; i++)
+	{
+		// Write entire row to outfile resized times
+		int num_col_dupes = 0;
+		do {
+			// iterate over pixels in scanline
+			for (int j = 0; j < bi.biWidth; j++)
+			{
+				// temporary storage
+				RGBTRIPLE triple;
 
-        // iterate over pixels in scanline
-        for (int j = 0; j < bi.biWidth; j++)
-        {
-            // Set the pixel row
-            if(pixel_row > TENTH){
-                pixel_row = 0;
-            }
-            pixel_row++;
+				// read RGB triple from infile
+				fread(&triple, sizeof(RGBTRIPLE), 1, inptr);
 
-            // Only dupe if full int of resize is non-zero
-            if(resize_full_int > 0){ 
+				// write RGB triple to outfile resized times
+				int num_row_dupes = 0;
+				do {
+					fwrite(&triple, sizeof(RGBTRIPLE), 1, outptr);
+		
+					num_row_dupes++;
+				} while (resize > num_row_dupes);
+			}
 
-            }
+			// skip over padding, if any
+			fseek(inptr, padding, SEEK_CUR);
 
-            // Only dupe 10th place if it is a non-zero
-            if(resize_tenth_decimal > 0){
-
-            }
-
-            // Only dupe 100th place if it is a non-zero
-            if(resize_hund_decimal > 0){
-                
-            }
-
-            // temporary storage
-            RGBTRIPLE triple;
-
-            // read RGB triple from infile
-            fread(&triple, sizeof(RGBTRIPLE), 1, inptr);
-
-            // write RGB triple to outfile
-            fwrite(&triple, sizeof(RGBTRIPLE), 1, outptr);
-        }
-
-        // skip over padding, if any
-        fseek(inptr, padding, SEEK_CUR);
-
-        // then add it back (to demonstrate how)
-        for (int k = 0; k < padding; k++)
-        {
-            fputc(0x00, outptr);
-        }
-    }
+			// then add it back (to demonstrate how)
+			for (int k = 0; k < padding; k++)
+			{
+				fputc(0x00, outptr);
+			}
+			
+			// Reset pointer to beginning of row if still need to resize
+			num_col_dupes++;
+			if (resize > num_col_dupes) {
+				fseek(inptr, (bi.biWidth * -1), SEEK_CUR);
+			}
+		} while (resize > num_col_dupes);
+	}
 
     // close infile
     fclose(inptr);
@@ -188,11 +159,7 @@ int main(int argc, char *argv[])
 
 int strtoi(char* i){
     
-    // Return error if int is negative value
-    if (i[0] == '-')
-        return -1;
-
-     // Return an true if only an int (in range) was provided
+     // Return an true if only a valid int was provided
     char *tail;
     errno = 0;
     long n = strtol(i, &tail, 10);
