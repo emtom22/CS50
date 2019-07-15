@@ -71,11 +71,14 @@ by naming each ###.jpg, where ### is three-digit decimal number from
 #include <stdlib.h>
 #include <string.h>
 
+#define JPG_SIGNATURE   4
+#define BLOCK_SIZE      512
+
 char* createFilename(int i, char* extension);
-FILE *jpgptr findJpgSignature (FILE *ptr);
+int* findJpgSignature (FILE *ptr);
 bool isJpgSignature(JPEG_SIGNATURE signature);
 
-JPEG_SIGNATURE = 4 bytes;
+
 
 int FAT_FORMAT_SIZE = 512; // number of bytes in smallest memory unit chunk
 
@@ -113,7 +116,6 @@ int main(int argc, char *argv[])
 
 	
 	// Iterate through file to find all the jpgs
-	JPEG_SIGNATURE valid_jpeg;
 	valid_jpeg.first = "0xff";
 	valid_jpeg.second = "0xd8";
 	valid_jpeg.third = "0xff";
@@ -127,9 +129,9 @@ int main(int argc, char *argv[])
 		findJpgSignature(inptr)
 		
 		// Create filename to output jpg to.
-		char *outfile = createFilename(file_num, ".jpg")
+		char *outfile = createFilename(file_num, ".jpg");
 		file_num++;
-		FILE *outptr = fopen(filename, "w");
+		FILE *outptr = fopen(outfile, "w");
 		
 		// Error check the output file is valid
 		if (outptr == NULL) {
@@ -167,10 +169,9 @@ int main(int argc, char *argv[])
 	} while (true);
 		
 	// Move back 2 bytes 
-	else{
-		fseek(inptr, -2, SEEK_CUR);
-	}
-	} while (!EOF);
+    do{
+        fseek(inptr, -2, SEEK_CUR);
+    } while (!EOF);
 	
 	
 	
@@ -191,7 +192,7 @@ int main(int argc, char *argv[])
 
 // Scan file until can find jpg signature
 // Returns EOF pointer if cannot find one.
-FILE *jpgptr findJpgSignature (FILE *ptr){
+int* findJpgSignature (FILE *ptr){
 	
 	// Search file for JPEG Signature
 	JPEG_SIGNATURE header;
@@ -219,9 +220,9 @@ FILE *jpgptr findJpgSignature (FILE *ptr){
 bool isJpgSignature(JPEG_SIGNATURE signature){
 	
 	// See if first 3 are good
-	if(signature.first = "0xff" &&
-		signature.second = "0xd8" &&
-		signature.third = "0xff") {
+	if(signature.first == "0xff" &&
+		signature.second == "0xd8" &&
+		signature.third == "0xff") {
 		
 		// use bit finding here
 		if(header.fourth = "1110..."){
@@ -236,14 +237,14 @@ char* createFilename(int i, char* extension){
 	char *filename = NULL;
 	// Assuming only storing up to 999 files, create filename
 	if (i > 99){
-		filename = itoa(file_num, filename, 3);
+		filename = itoa(i, filename, 3);
 	}
 	else if(i > 9){
-		filename = "0" + itoa(file_num, filename, 2);
+		filename = "0" + itoa(i, filename, 2);
 	}
 	else{
-		filename = "00" + itoa(file_num, filename, 1);
+		filename = "00" + itoa(i, filename, 1);
 	}
 
-	return filename + extension;
+	return strcat(filename, extension);
 }
