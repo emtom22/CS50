@@ -60,7 +60,7 @@ by naming each ###.jpg, where ### is three-digit decimal number from
 #include <stdlib.h>
 #include <string.h>
 
-#define JPG_SIGN_SIZE   4
+#define JPG_SIGN_SIZE       4
 #define FAT_BLOCK_SIZE      512     // number of bytes in smallest memory unit chunk
 
 typedef uint8_t  BYTE;
@@ -73,6 +73,12 @@ typedef struct
 	BYTE byte_4;
 } __attribute__((__packed__))
 JPG_HEADER;
+
+typedef struct 
+{
+    BYTE fat_bytes[FAT_BLOCK_SIZE];
+} __attribute__((__packed__))
+FAT_BLOCK;
 
 char* createFilename(int i, char* extension);
 long int findJpgSignature (FILE *ptr);
@@ -129,36 +135,15 @@ int main(int argc, char *argv[])
 			return 3;
 		}
 
-        // Seek back to the start of the jpg signature
-        fseek(inptr, -JPG_SIGN_SIZE, SEEK_CUR);
-
         // Write found jpg to output file
-
 		do{
-			// store first 4 bytes
-			// may need to write some of the bytes at times
-			JPEG_SIGNATURE temp_jpg;
-			fread(&temp_jpg, sizeof(JPEG_SIGNATURE), 1, inptr);
-			fseek(inptr, sizeof(JPEG_SIGNATURE), SEEK_CUR);
-			if(isJpgSignature(temp_jpg)){
-				break;
-			}
-			
-			else {
-				// Do i need to subtract the 4 bytes from jpg header?
-				// before using the FAT_FORMAT_SIZE?
-				fwrite(inptr, FAT_FORMAT_SIZE, 1, outptr);
-			}
-	
-		}while (true);
+			// Write in FAT_BLOCK size chunks
+            FAT_BLOCK chunk;
+            fread(&chunk, FAT_BLOCK_SIZE, 1, inptr);
+            fwrite(&chunk, FAT_BLOCK_SIZE, 1, outptr);
+            
+		} while ((jpg2 + 1) >= ftell(inptr));   // DOES THIS ACCOUNT FOR EOF POINTER??
 	} while (true);
-
-    
-		
-	// Move back 2 bytes 
-    do{
-        fseek(inptr, -2, SEEK_CUR);
-    } while (!EOF);
 }
 
 // Scan file from given pointer until it can find jpg signature.
