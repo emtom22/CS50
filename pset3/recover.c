@@ -1,15 +1,4 @@
 /*
-Even though JPEGs are more complicated than BMPs, JPEGs have "signatures," 
-patterns of bytes that can distinguish them from other file formats. 
-Specifically, the first three bytes of JPEGs are:
-
-0xff 0xd8 0xff
-
-from first byte to third byte, left to right. The fourth byte, 
-meanwhile, is either 0xe0, 0xe1, 0xe2, 0xe3, 0xe4, 0xe5, 0xe6, 
-0xe7, 0xe8, 0xe9, 0xea, 0xeb, 0xec, 0xed, 0xee, or 0xef. 
-Put another way, the fourth byte’s first four bits are 1110.
-
 Fortunately, digital cameras tend to store photographs contiguously on 
 memory cards, whereby each photo is stored immediately after the previously 
 taken photo. Accordingly, the start of a JPEG usually demarks the end of 
@@ -71,28 +60,23 @@ by naming each ###.jpg, where ### is three-digit decimal number from
 #include <stdlib.h>
 #include <string.h>
 
-#define JPG_SIGNATURE   4
-#define BLOCK_SIZE      512
+#define JPG_SIGN_SIZE   4
+#define FAT_BLOCK_SIZE      512     // number of bytes in smallest memory unit chunk
 
-char* createFilename(int i, char* extension);
-int* findJpgSignature (FILE *ptr);
-bool isJpgSignature(JPEG_SIGNATURE signature);
-
-
-
-int FAT_FORMAT_SIZE = 512; // number of bytes in smallest memory unit chunk
-
-typedef uint8_t BYTE;
+typedef uint8_t  BYTE;
 
 typedef struct
 {
-	BYTE first;
-	BYTE second;
-	BYTE third;
-	BYTE fourth;
+	BYTE byte_1;
+	BYTE byte_2;
+	BYTE byte_3;
+	BYTE byte_4;
 } __attribute__((__packed__))
-JPEG_SIGNATURE;
+JPG_HEADER;
 
+char* createFilename(int i, char* extension);
+long int findJpgSignature (FILE *ptr);
+bool isJpgSignature(JPG_HEADER header);
 
 int main(int argc, char *argv[])
 {	
@@ -112,26 +96,31 @@ int main(int argc, char *argv[])
         printf("Could not open %s.\n", infile);
         return 2;
     }
-			
 
-	
-	// Iterate through file to find all the jpgs
-	valid_jpeg.first = "0xff";
-	valid_jpeg.second = "0xd8";
-	valid_jpeg.third = "0xff";
+    file_num++; // increment file number count
 			
+	// Iterate through file to find all the jpgs			
 	do {
 		if (EOF){
 			break;
 		}
 		
-		// Find the jpg header signature
-		findJpgSignature(inptr)
-		
-		// Create filename to output jpg to.
+		// Find the first jpg header signature
+		long int jpg1 = findJpgSignature(inptr);
+
+        // Find the next jpg header signature
+        fseek(inptr, 1, SEEK_CUR);
+        long int jpg2 = findJpgSignature(inptr);
+        fseek(inptr, -1, SEEK_CUR);
+
+        // what to do if jpg1 or 2 is EOF?
+        if (jpg1 == EOF || jpg2 == EOF) {
+            
+        }
+
+		// Create filename to output jpg file
 		char *outfile = createFilename(file_num, ".jpg");
-		file_num++;
-		FILE *outptr = fopen(outfile, "w");
+		FILE *outptr = fopen(outfile, "w");	
 		
 		// Error check the output file is valid
 		if (outptr == NULL) {
@@ -139,16 +128,12 @@ int main(int argc, char *argv[])
 			printf("Could not create %s.\n", outfile);
 			return 3;
 		}
-		
-		// Write jpg signature
-		// static write the 3 bytes jpeg signature
-		fwrite(valid_jpeg, sizeof(BYTE) * 3, 1, outptr);
-		
-		// fseek back 1 byte to get the 4th byte in signature
-		fseek(inptr, 1, SEEK_CUR);
-		fwrite(inptr, sizeof(BYTE), 1, outptr);
-		
-		// Write jpg to output.
+
+        // Seek back to the start of the jpg signature
+        fseek(inptr, -JPG_SIGN_SIZE, SEEK_CUR);
+
+        // Write found jpg to output file
+
 		do{
 			// store first 4 bytes
 			// may need to write some of the bytes at times
@@ -167,65 +152,81 @@ int main(int argc, char *argv[])
 	
 		}while (true);
 	} while (true);
+
+    
 		
 	// Move back 2 bytes 
     do{
         fseek(inptr, -2, SEEK_CUR);
     } while (!EOF);
-	
-	
-	
-
-	/*
-	ven though JPEGs are more complicated than BMPs, JPEGs have "signatures," 
-	patterns of bytes that can distinguish them from other file formats. 
-	Specifically, the first three bytes of JPEGs are:
-
-	0xff 0xd8 0xff
-
-	from first byte to third byte, left to right. The fourth byte, 
-	meanwhile, is either 0xe0, 0xe1, 0xe2, 0xe3, 0xe4, 0xe5, 0xe6, 
-	0xe7, 0xe8, 0xe9, 0xea, 0xeb, 0xec, 0xed, 0xee, or 0xef. 
-	Put another way, the fourth byte’s first four bits are 1110.
-	*/
 }
 
-// Scan file until can find jpg signature
-// Returns EOF pointer if cannot find one.
-int* findJpgSignature (FILE *ptr){
+// Scan file from given pointer until it can find jpg signature.
+// Returns the position of the start of the Jpg signature if found.
+// If not found, then return EOF pointer.
+long int findJpgSignature (FILE *ptr){
 	
-	// Search file for JPEG Signature
-	JPEG_SIGNATURE header;
-	
-	while(true){
+    // Keep track of original ptr position
+    long int orginal_ptr = ftell(ptr);
+
+    // Temporary storage for header
+    JPG_HEADER header;
+
+	while(true) {
+
+        // read in a jpg_header to test if valid        
+		fread(&header, sizeof(JPG_HEADER), 1, ptr);
 		
-		fread(&header, sizeof(header), 1, ptr);
+		// If any value is EOF return call
+		if(header.byte_1 == EOF || header.byte_2 == EOF ||
+			header.byte_3 == EOF || header.byte_4 == EOF) {
+            return EOF;
+        }
 		
-		// Check if EOF
-		if(header.first == EOF ||
-			header.second == EOF ||
-			header.third == EOF ||
-			header.fourth == EOF)
-		
-		// Check if JPG signature
-		if(isJpgSignature){
-			return *ptr;
+		// Move pointers and return if JPG signature valid
+		if(isJpgSignature) {
+
+            // Move ptr to beginning of jpg header
+            fseek(ptr, -sizeof(JPG_HEADER), SEEK_CUR);
+            long int jpg_header_ptr = ftell(ptr);
+
+            // Set read file pointer back to original position
+            fsetpos(ptr, orginal_ptr); 
+
+            // return the jpg signature ptr
+			return jpg_header_ptr;
 		}
+
+        // Move back read pointer if the previously read values can be part of the jpg header
 		else {
-			fseek(ptr, 2, SEEK_CUR);
+            if (header.byte_2 == "0xff" && header.byte_3 == "0xd8" && header.byte_4 == "0xff") {
+                fseek(ptr, -3, SEEK_CUR);    
+            }
+            else if (header.byte_3 = "0xff" && header.byte_4 == "0xd8") {
+                fseek(ptr, -2, SEEK_CUR); 
+            }
+            else if (header.byte_4 = "0xff") {
+                fseek(ptr, -1, SEEK_CUR);
+            }
 		}
 	}
 }
 
-bool isJpgSignature(JPEG_SIGNATURE signature){
-	
+bool isJpgSignature(JPG_HEADER header) {
 	// See if first 3 are good
-	if(signature.first == "0xff" &&
-		signature.second == "0xd8" &&
-		signature.third == "0xff") {
+	if(header.byte_1 == "0xff" &&
+		header.byte_2 == "0xd8" &&
+		header.byte_3 == "0xff") {
 		
-		// use bit finding here
-		if(header.fourth = "1110..."){
+		// use bit finding here instead
+        // Put another way, the fourth byte’s first four bits are 1110.
+		if(header.byte_4 == "0xe0" || header.byte_4 == "0xe1" header.byte_4 == "0xe2"
+            header.byte_4 == "0xe3" || header.byte_4 == "0xe4" header.byte_4 == "0xe5"
+            header.byte_4 == "0xe6" || header.byte_4 == "0xe7" header.byte_4 == "0xe8"
+            header.byte_4 == "0xe9" || header.byte_4 == "0xea" header.byte_4 == "0xeb"
+            header.byte_4 == "0xec" || header.byte_4 == "0xed" header.byte_4 == "0xee"
+            header.byte_4 == "0xef")
+         {
 			return true;
 		}	
 	}
