@@ -30,4 +30,24 @@ If you want to develop on your local desktop instead of via the CS50 web based s
   <li></li>
 </ul>
 
-  
+<h2>PSET3: File I/O Manipulation</h2>
+<h3>Concepts include...</h3>
+<ul>
+  <li></li> 
+</ul>
+<h3>Assignments include...</h3>
+<ul>
+  <li></li>
+</ul>
+
+<h2>PSET4: TBD</h2>
+<h3>Concepts include...</h3>
+<ul>
+  <li></li> 
+</ul>
+<h3>Assignments include...</h3>
+<ul>
+  <li></li>
+</ul>
+
+
