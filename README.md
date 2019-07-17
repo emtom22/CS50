@@ -16,7 +16,7 @@ If you want to develop on your local desktop instead of via the CS50 web based s
 </ul>
 <h3>Assignments include...</h3>
 <ul>
-  <li><em><strong>mario.c</strong></em> -> builds up a mario ascending and descending pyramid from 1-8 steps  
+  <li><em><strong>mario.c</strong></em> -> builds up a mario ascending and descending pyramid from 1-8 steps</li>  
   <li><em><strong>credit.c</strong></em> -> validates whether an inputted number is an AMEX, VISA or MC</li>
 </ul>
 
@@ -24,30 +24,44 @@ If you want to develop on your local desktop instead of via the CS50 web based s
 <h3>Concepts include...</h3>
 <ul>
   <li>Arrays</li> 
+  <li>Searching Algorithms</li>
+  <li>Sorting Algorithms</li>
+  <li>Custom Functions</li>
+  <li>Debugging</li>
 </ul>
 <h3>Assignments include...</h3>
 <ul>
-  <li></li>
+  <li><em><strong>caesar.c</strong></em> -> encrypt using a 1 charcter rotation</li>
+  <li><em><strong>vigenere.c</strong></em> -> encrypt using a word rotation</li> 
+  <li><em><strong>crack.c</strong></em> -> find password for given encrypted password and salt</li> 
 </ul>
 
 <h2>PSET3: File I/O Manipulation</h2>
 <h3>Concepts include...</h3>
 <ul>
-  <li></li> 
+  <li>Pointers</li>
+  <li>File read/write</li> 
+  <li>File seeking/manipulation</li>
+  <li>Call Stack & Heap</li>
 </ul>
 <h3>Assignments include...</h3>
 <ul>
-  <li></li>
+  <li><em><strong>clue.c</strong></em> -> for a given scrambled jpg, take off red filter</li> 
+  <li><em><strong>resize.c</strong></em> -> for a given .bmp file resize by size 'int' </li> 
+  <li><em><strong>recover.c</strong></em> -> for a given file, find and save all jpgs</li> 
 </ul>
 
 <h2>PSET4: TBD</h2>
 <h3>Concepts include...</h3>
 <ul>
-  <li></li> 
+  <li>Hash Tables</li> 
+  <li>Try/Catch Statements</li>
+  <li>Linked Lists</li>
+  <li>Custom Data Structures</li>
 </ul>
 <h3>Assignments include...</h3>
 <ul>
-  <li></li>
+  <li><em><strong>speller.c</strong></em> -> spellchecks the inputted file</li> 
 </ul>
 
 
