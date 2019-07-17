@@ -1,45 +1,18 @@
 /*
-Fortunately, digital cameras tend to store photographs contiguously on 
-memory cards, whereby each photo is stored immediately after the previously 
-taken photo. Accordingly, the start of a JPEG usually demarks the end of 
-another. However, digital cameras often initialize cards with a FAT file 
-system whose "block size" is 512 bytes (B). The implication is that these 
-cameras only write to those cards in units of 512 B. A photo that’s 1 MB 
-(i.e., 1,048,576 B) thus takes up 1048576 ÷ 512 = 2048 "blocks" on a 
-memory card. But so does a photo that’s, say, one byte smaller 
-(i.e., 1,048,575 B)! The wasted space on disk is called "slack space." 
-Forensic investigators often look at slack space for remnants of suspicious 
-data.
-
-Rather than read my memory card’s bytes one at a time, you can read 
-512 of them at a time into a buffer for efficiency’s sake. Thanks to FAT, 
-you can trust that JPEGs' signatures will be "block-aligned." 
-That is, you need only look for those signatures in a block’s first 
-four bytes.
-
-A file called card.raw. So that you don’t waste time iterating over 
-millions of 0s unnecessarily, I’ve only imaged the first few megabytes 
-of the memory card. But you should ultimately find that the image 
-contains 50 JPEGs.
-
 Implement a program called recover that recovers JPEGs from a 
 forensic image.
 
 Implement your program in a file called recover.c in a directory 
 called recover.
-
 Your program should accept exactly one command-line argument, 
 the name of a forensic image from which to recover JPEGs. 
 + If your program is not executed with exactly one command-line argument, 
 it should remind the user of correct usage, as with fprintf (to stderr), 
 and main should return 1.
-
 If the forensic image cannot be opened for reading, 
 your program should inform the user as much, 
 as with fprintf (to stderr), and  main should return 2.
-
 Your program, if it uses malloc, must not leak any memory.
-
 When executed, your program should recover every one of the JPEGs 
 from card.raw, storing each as a separate file in your current 
 working directory. Your program should number the files it outputs 
@@ -104,23 +77,23 @@ int main(int argc, char *argv[])
     }
 
     file_num++; // increment file number count
-			
+	
+	// Find the 1st and 2nd jpg header signature
+	long int jpg_start = findJpgSignature(inptr);		
+	long int jpg_end = findJpgSignature(inptr);
+	
 	// Iterate through file to find all the jpgs			
 	do {
-		if (EOF){
+		
+		// Set file ptr to start of jpg
+		fsetpos(inptr, jpg_start); 
+		
+		if (inptr == EOF){
 			break;
 		}
-		
-		// Find the first jpg header signature
-		long int jpg1 = findJpgSignature(inptr);
-
-        // Find the next jpg header signature
-        fseek(inptr, 1, SEEK_CUR);
-        long int jpg2 = findJpgSignature(inptr);
-        fseek(inptr, -1, SEEK_CUR);
-
-        // what to do if jpg1 or 2 is EOF?
-        if (jpg1 == EOF || jpg2 == EOF) {
+        
+        // What to do if jpg1 or 2 is EOF?
+        if (jpg2 == EOF) {
             
         }
 
@@ -135,31 +108,40 @@ int main(int argc, char *argv[])
 			return 3;
 		}
 
+		// Read the first FAT block
+        
+		
         // Write found jpg to output file
-		do{
-			// Write in FAT_BLOCK size chunks
-            FAT_BLOCK chunk;
-            fread(&chunk, FAT_BLOCK_SIZE, 1, inptr);
+		do {
+			// Write in FAT_BLOCK size chunks  
+			FAT_BLOCK chunk;
+			fread(&chunk, FAT_BLOCK_SIZE, 1, inptr);			
             fwrite(&chunk, FAT_BLOCK_SIZE, 1, outptr);
-            
-		} while ((jpg2 + 1) >= ftell(inptr));   // DOES THIS ACCOUNT FOR EOF POINTER??
-	} while (true);
+			
+		} while (ftell(inptr) < jpg_end || ftell(inptr) == EOF);  
+		
+		// Set new start and end for next jpg
+		jpg_start = jpg_end; 	//jpg_end should == ftell(inptr)
+		jpg_end = findJpgSignature(inptr);
+
+	} while (jpg_start == EOF);
 }
 
 // Scan file from given pointer until it can find jpg signature.
 // Returns the position of the start of the Jpg signature if found.
 // If not found, then return EOF pointer.
 long int findJpgSignature (FILE *ptr){
-	
-    // Keep track of original ptr position
-    long int orginal_ptr = ftell(ptr);
 
     // Temporary storage for header
     JPG_HEADER header;
-
+	
+	// Scan through input file until find a jpg signature
 	while(true) {
 
-        // read in a jpg_header to test if valid        
+		// capture ptr location of start of potential header 
+		long int jpg_header_ptr = ftell(ptr);      
+
+        // read in a jpg_header to test if valid
 		fread(&header, sizeof(JPG_HEADER), 1, ptr);
 		
 		// If any value is EOF return call
@@ -167,14 +149,10 @@ long int findJpgSignature (FILE *ptr){
 			header.byte_3 == EOF || header.byte_4 == EOF) {
             return EOF;
         }
-		
-		// Move pointers and return if JPG signature valid
-		if(isJpgSignature) {
 
-            // Move ptr to beginning of jpg header
-            fseek(ptr, -sizeof(JPG_HEADER), SEEK_CUR);
-            long int jpg_header_ptr = ftell(ptr);
-
+		// Return ptr value if jpg signature found
+		if(isJpgSignature(header)) {
+			
             // Set read file pointer back to original position
             fsetpos(ptr, orginal_ptr); 
 
@@ -182,21 +160,14 @@ long int findJpgSignature (FILE *ptr){
 			return jpg_header_ptr;
 		}
 
-        // Move back read pointer if the previously read values can be part of the jpg header
+        // Move to next FAT Block if jpg signature not found
 		else {
-            if (header.byte_2 == "0xff" && header.byte_3 == "0xd8" && header.byte_4 == "0xff") {
-                fseek(ptr, -3, SEEK_CUR);    
-            }
-            else if (header.byte_3 = "0xff" && header.byte_4 == "0xd8") {
-                fseek(ptr, -2, SEEK_CUR); 
-            }
-            else if (header.byte_4 = "0xff") {
-                fseek(ptr, -1, SEEK_CUR);
-            }
+			fseek(inptr, FAT_BLOCK_SIZE - sizeof(JPG_HEADER), SEEK_CUR);
 		}
 	}
 }
 
+// Define if a given set of 4 bytes is a jpg signature
 bool isJpgSignature(JPG_HEADER header) {
 	// See if first 3 are good
 	if(header.byte_1 == "0xff" &&
@@ -218,6 +189,7 @@ bool isJpgSignature(JPG_HEADER header) {
 	return false;
 }
 
+// Creates a numbered filename with a given number and extension
 char* createFilename(int i, char* extension){
 	
 	char *filename = NULL;
