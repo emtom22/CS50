@@ -78,8 +78,13 @@ int main(int argc, char *argv[])
 
     file_num++; // increment file number count
 	
-	// Find the 1st and 2nd jpg header signature
-	long int jpg_start = findJpgSignature(inptr);		
+	// Find the 1st jpg header signature
+	long int jpg_start = findJpgSignature(inptr);
+	
+	// Move forward 1 FAT block to not get the same jpg signature
+	fseek(inptr, FAT_BLOCK_SIZE, SEEK_CUR);
+	
+	// Find the 2nd jpg header signature (aka end of 1st jpg header)
 	long int jpg_end = findJpgSignature(inptr);
 	
 	// Iterate through file to find all the jpgs			
@@ -92,11 +97,6 @@ int main(int argc, char *argv[])
 			break;
 		}
         
-        // What to do if jpg1 or 2 is EOF?
-        if (jpg2 == EOF) {
-            
-        }
-
 		// Create filename to output jpg file
 		char *outfile = createFilename(file_num, ".jpg");
 		FILE *outptr = fopen(outfile, "w");	
@@ -108,9 +108,6 @@ int main(int argc, char *argv[])
 			return 3;
 		}
 
-		// Read the first FAT block
-        
-		
         // Write found jpg to output file
 		do {
 			// Write in FAT_BLOCK size chunks  
@@ -118,7 +115,7 @@ int main(int argc, char *argv[])
 			fread(&chunk, FAT_BLOCK_SIZE, 1, inptr);			
             fwrite(&chunk, FAT_BLOCK_SIZE, 1, outptr);
 			
-		} while (ftell(inptr) < jpg_end || ftell(inptr) == EOF);  
+		} while ((ftell(inptr) < jpg_end && jpg_end <> EOF) || ftell(inptr) == EOF);  
 		
 		// Set new start and end for next jpg
 		jpg_start = jpg_end; 	//jpg_end should == ftell(inptr)
@@ -131,30 +128,33 @@ int main(int argc, char *argv[])
 // Returns the position of the start of the Jpg signature if found.
 // If not found, then return EOF pointer.
 long int findJpgSignature (FILE *ptr){
-
+	
+	// Initialize ptrs
+	long int original_ptr = ftell(ptr);
+	long int jpg_header_ptr = orginal_ptr;  
+	
     // Temporary storage for header
     JPG_HEADER header;
 	
 	// Scan through input file until find a jpg signature
 	while(true) {
-
-		// capture ptr location of start of potential header 
-		long int jpg_header_ptr = ftell(ptr);      
-
-        // read in a jpg_header to test if valid
+		
+        // Read in a jpg_header to test if valid
 		fread(&header, sizeof(JPG_HEADER), 1, ptr);
 		
-		// If any value is EOF return call
-		if(header.byte_1 == EOF || header.byte_2 == EOF ||
-			header.byte_3 == EOF || header.byte_4 == EOF) {
-            return EOF;
+		// If 1st byte is EOF return call
+		if(header.byte_1 == EOF) {
+		
+			// Set read file pointer back to original position
+            fsetpos(ptr, orginal_ptr);	
+			return EOF;
         }
 
 		// Return ptr value if jpg signature found
 		if(isJpgSignature(header)) {
 			
             // Set read file pointer back to original position
-            fsetpos(ptr, orginal_ptr); 
+            fsetpos(ptr, orginal_ptr);
 
             // return the jpg signature ptr
 			return jpg_header_ptr;
@@ -163,6 +163,7 @@ long int findJpgSignature (FILE *ptr){
         // Move to next FAT Block if jpg signature not found
 		else {
 			fseek(inptr, FAT_BLOCK_SIZE - sizeof(JPG_HEADER), SEEK_CUR);
+			jpg_header_ptr = ftell(ptr);
 		}
 	}
 }
@@ -170,9 +171,9 @@ long int findJpgSignature (FILE *ptr){
 // Define if a given set of 4 bytes is a jpg signature
 bool isJpgSignature(JPG_HEADER header) {
 	// See if first 3 are good
-	if(header.byte_1 == "0xff" &&
-		header.byte_2 == "0xd8" &&
-		header.byte_3 == "0xff") {
+	if(header.byte_1 == "0xff" && header.byte_2 == "0xd8" &&
+		header.byte_3 == "0xff") 
+	{
 		
 		// use bit finding here instead
         // Put another way, the fourth byte’s first four bits are 1110.
@@ -182,7 +183,7 @@ bool isJpgSignature(JPG_HEADER header) {
             header.byte_4 == "0xe9" || header.byte_4 == "0xea" header.byte_4 == "0xeb"
             header.byte_4 == "0xec" || header.byte_4 == "0xed" header.byte_4 == "0xee"
             header.byte_4 == "0xef")
-         {
+        {
 			return true;
 		}	
 	}
