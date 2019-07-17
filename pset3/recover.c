@@ -20,7 +20,6 @@ by naming each ###.jpg, where ### is three-digit decimal number from
 000 on up.
 */
 
-// Copies a BMP file
 #include <ctype.h>
 #include <errno.h>
 #include <float.h>
@@ -33,7 +32,6 @@ by naming each ###.jpg, where ### is three-digit decimal number from
 #include <stdlib.h>
 #include <string.h>
 
-#define JPG_SIGN_SIZE       4
 #define FAT_BLOCK_SIZE      512     // number of bytes in smallest memory unit chunk
 
 typedef uint8_t  BYTE;
@@ -53,9 +51,10 @@ typedef struct
 } __attribute__((__packed__))
 FAT_BLOCK;
 
-char* createFilename(int i, char* extension);
+// Method definitions
 long int findJpgSignature (FILE *ptr);
 bool isJpgSignature(JPG_HEADER header);
+char* createFilename(int i, char* extension);
 
 int main(int argc, char *argv[])
 {	
@@ -75,8 +74,6 @@ int main(int argc, char *argv[])
         printf("Could not open %s.\n", infile);
         return 2;
     }
-
-    file_num++; // increment file number count
 	
 	// Find the 1st jpg header signature
 	long int jpg_start = findJpgSignature(inptr);
@@ -100,6 +97,7 @@ int main(int argc, char *argv[])
 		// Create filename to output jpg file
 		char *outfile = createFilename(file_num, ".jpg");
 		FILE *outptr = fopen(outfile, "w");	
+		file_num++; // increment file number count
 		
 		// Error check the output file is valid
 		if (outptr == NULL) {
@@ -121,7 +119,7 @@ int main(int argc, char *argv[])
 		jpg_start = jpg_end; 	//jpg_end should == ftell(inptr)
 		jpg_end = findJpgSignature(inptr);
 
-	} while (jpg_start == EOF);
+	} while (jpg_start <> EOF);
 }
 
 // Scan file from given pointer until it can find jpg signature.
