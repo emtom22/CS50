@@ -46,22 +46,26 @@ If you want to develop on your local desktop instead of via the CS50 web based s
 </ul>
 <h3>Assignments include...</h3>
 <ul>
-  <li><em><strong>clue.c</strong></em> -> for a given scrambled jpg, take off red filter</li> 
+  <li><em><strong>whodunit.c</strong></em> -> for a given scrambled jpg, take off red filter</li> 
   <li><em><strong>resize.c</strong></em> -> for a given .bmp file resize by size 'int' </li> 
   <li><em><strong>recover.c</strong></em> -> for a given file, find and save all jpgs</li> 
 </ul>
 
-<h2>PSET4: TBD</h2>
+<h2>PSET4: Data Structures</h2>
 <h3>Concepts include...</h3>
 <ul>
   <li>Hash Tables</li> 
-  <li>Try/Catch Statements</li>
+  <li>Tries</li>
   <li>Linked Lists</li>
   <li>Custom Data Structures</li>
 </ul>
 <h3>Assignments include...</h3>
 <ul>
   <li><em><strong>speller.c</strong></em> -> spellchecks the inputted file</li> 
+  <li><em><strong>load.c</strong></em> -> loads the dictionary to check words against</li> 
+  <li><em><strong>size.c</strong></em> -> </li> 
+  <li><em><strong>check.c</strong></em> -> checks if words are in dictionary</li> 
+  <li><em><strong>unload.c</strong></em> -> unloads the dictionary</li> 
 </ul>
 
 
