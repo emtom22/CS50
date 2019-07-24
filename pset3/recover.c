@@ -84,7 +84,10 @@ int main(int argc, char *argv[])
 	// Find the 2nd jpg header signature (aka end of 1st jpg header)
 	long int jpg_end = findJpgSignature(inptr);
 	
-	// Iterate through file to find all the jpgs			
+	// Move back 1 FAT block to go to beginning of first jpg
+	fseek(inptr, -FAT_BLOCK_SIZE, SEEK_CUR);
+
+	// Iterate through file to find all the jpgs until EOF		
 	do {
 		
 		// Set file ptr to start of jpg
@@ -106,20 +109,22 @@ int main(int argc, char *argv[])
 			return 3;
 		}
 
-        // Write found jpg to output file
-		do {
+        // Write jpg FAT blocks to output file until EOF 
+		while ((ftell(inptr) < jpg_end && jpg_end != EOF) || ftell(inptr) != EOF) 
+		{
 			// Write in FAT_BLOCK size chunks  
 			FAT_BLOCK chunk;
 			fread(&chunk, FAT_BLOCK_SIZE, 1, inptr);			
             fwrite(&chunk, FAT_BLOCK_SIZE, 1, outptr);
+		}
 			
-		} while ((ftell(inptr) < jpg_end && jpg_end <> EOF) || ftell(inptr) == EOF);  
+		  
 		
 		// Set new start and end for next jpg
 		jpg_start = jpg_end; 	//jpg_end should == ftell(inptr)
 		jpg_end = findJpgSignature(inptr);
 
-	} while (jpg_start <> EOF);
+	} while (jpg_start != EOF);
 }
 
 // Scan file from given pointer until it can find jpg signature.
@@ -129,7 +134,7 @@ long int findJpgSignature (FILE *ptr){
 	
 	// Initialize ptrs
 	long int original_ptr = ftell(ptr);
-	long int jpg_header_ptr = orginal_ptr;  
+	long int jpg_header_ptr = original_ptr;  
 	
     // Temporary storage for header
     JPG_HEADER header;
@@ -144,7 +149,7 @@ long int findJpgSignature (FILE *ptr){
 		if(header.byte_1 == EOF) {
 		
 			// Set read file pointer back to original position
-            fsetpos(ptr, orginal_ptr);	
+            fsetpos(ptr, original_ptr);	
 			return EOF;
         }
 
@@ -152,7 +157,7 @@ long int findJpgSignature (FILE *ptr){
 		if(isJpgSignature(header)) {
 			
             // Set read file pointer back to original position
-            fsetpos(ptr, orginal_ptr);
+            fsetpos(ptr, original_ptr);
 
             // return the jpg signature ptr
 			return jpg_header_ptr;
@@ -160,7 +165,7 @@ long int findJpgSignature (FILE *ptr){
 
         // Move to next FAT Block if jpg signature not found
 		else {
-			fseek(inptr, FAT_BLOCK_SIZE - sizeof(JPG_HEADER), SEEK_CUR);
+			fseek(ptr, FAT_BLOCK_SIZE - sizeof(JPG_HEADER), SEEK_CUR);
 			jpg_header_ptr = ftell(ptr);
 		}
 	}
@@ -169,18 +174,18 @@ long int findJpgSignature (FILE *ptr){
 // Define if a given set of 4 bytes is a jpg signature
 bool isJpgSignature(JPG_HEADER header) {
 	// See if first 3 are good
-	if(header.byte_1 == "0xff" && header.byte_2 == "0xd8" &&
-		header.byte_3 == "0xff") 
+	if(header.byte_1 == 0xff && header.byte_2 == 0xd8 &&
+		header.byte_3 == 0xff) 
 	{
 		
 		// use bit finding here instead
         // Put another way, the fourth byte’s first four bits are 1110.
-		if(header.byte_4 == "0xe0" || header.byte_4 == "0xe1" header.byte_4 == "0xe2"
-            header.byte_4 == "0xe3" || header.byte_4 == "0xe4" header.byte_4 == "0xe5"
-            header.byte_4 == "0xe6" || header.byte_4 == "0xe7" header.byte_4 == "0xe8"
-            header.byte_4 == "0xe9" || header.byte_4 == "0xea" header.byte_4 == "0xeb"
-            header.byte_4 == "0xec" || header.byte_4 == "0xed" header.byte_4 == "0xee"
-            header.byte_4 == "0xef")
+		if(header.byte_4 == 0xe0 || header.byte_4 == 0xe1 || header.byte_4 == 0xe2 ||
+            header.byte_4 == 0xe3 || header.byte_4 == 0xe4 || header.byte_4 == 0xe5 ||
+            header.byte_4 == 0xe6 || header.byte_4 == 0xe7 || header.byte_4 == 0xe8 ||
+            header.byte_4 == 0xe9 || header.byte_4 == 0xea || header.byte_4 == 0xeb ||
+            header.byte_4 == 0xec || header.byte_4 == 0xed || header.byte_4 == 0xee ||
+            header.byte_4 == 0xef)
         {
 			return true;
 		}	
@@ -197,10 +202,10 @@ char* createFilename(int i, char* extension){
 		filename = itoa(i, filename, 3);
 	}
 	else if(i > 9){
-		filename = "0" + itoa(i, filename, 2);
+		filename = strcat("0", itoa(i, filename, 2));
 	}
 	else{
-		filename = "00" + itoa(i, filename, 1);
+		filename = strcat("00", itoa(i, filename, 1));
 	}
 
 	return strcat(filename, extension);
