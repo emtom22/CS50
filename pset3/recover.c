@@ -52,7 +52,7 @@ typedef struct
 FAT_BLOCK;
 
 // Method definitions
-long int findJpgSignature (FILE *ptr);
+fpos_t findJpgSignature (FILE *ptr);
 bool isJpgSignature(JPG_HEADER header);
 char* createFilename(int i, char* extension);
 
@@ -75,27 +75,28 @@ int main(int argc, char *argv[])
         return 2;
     }
 	
-	// Find the 1st jpg header signature
-	long int jpg_start = findJpgSignature(inptr);
+	// Initialize jpg start
+	fpos_t jpg_start;
 	
-	// Move forward 1 FAT block to not get the same jpg signature
-	fseek(inptr, FAT_BLOCK_SIZE, SEEK_CUR);
+	// // Move forward 1 FAT block to not get the same jpg signature
+	// fseek(inptr, FAT_BLOCK_SIZE, SEEK_CUR);
 	
-	// Find the 2nd jpg header signature (aka end of 1st jpg header)
-	long int jpg_end = findJpgSignature(inptr);
+	// // Find the 2nd jpg header signature (aka end of 1st jpg header)
+	// fpos_t jpg_end = findJpgSignature(inptr);
 	
-	// Move back 1 FAT block to go to beginning of first jpg
-	fseek(inptr, -FAT_BLOCK_SIZE, SEEK_CUR);
+	// // Move back 1 FAT block to go to beginning of first jpg
+	// fseek(inptr, -FAT_BLOCK_SIZE, SEEK_CUR);
 
 	// Iterate through file to find all the jpgs until EOF		
-	do {
-		
+	while (!feof(inptr)) {
+
+		// Find jpg and store ptr
+		jpg_start = findJpgSignature(inptr);
+
 		// Set file ptr to start of jpg
-		fsetpos(inptr, jpg_start); 
-		
-		if (inptr == EOF){
-			break;
-		}
+		// shouldn't need to set to start because it already is the start
+		// after finding the jpg
+		// fsetpos(inptr, &jpg_start); 
         
 		// Create filename to output jpg file
 		char *outfile = createFilename(file_num, ".jpg");
@@ -109,66 +110,69 @@ int main(int argc, char *argv[])
 			return 3;
 		}
 
-        // Write jpg FAT blocks to output file until EOF 
-		while ((ftell(inptr) < jpg_end && jpg_end != EOF) || ftell(inptr) != EOF) 
-		{
+        // Write jpg FAT blocks to output file until EOF or start of new jpeg
+		while (!feof(inptr)) 
+		{	
 			// Write in FAT_BLOCK size chunks  
 			FAT_BLOCK chunk;
-			fread(&chunk, FAT_BLOCK_SIZE, 1, inptr);			
-            fwrite(&chunk, FAT_BLOCK_SIZE, 1, outptr);
-		}
-			
-		  
-		
-		// Set new start and end for next jpg
-		jpg_start = jpg_end; 	//jpg_end should == ftell(inptr)
-		jpg_end = findJpgSignature(inptr);
+			JPG_HEADER header;
+			fpos_t chunk_ptr;
 
-	} while (jpg_start != EOF);
+			fread(&chunk, FAT_BLOCK_SIZE, 1, inptr);
+	    	fwrite(&chunk, FAT_BLOCK_SIZE, 1, outptr);
+
+			
+			// Read in a jpg_header and reset ptr to original position
+			fgetpos(inptr, &chunk_ptr); 
+			fread(&header, sizeof(JPG_HEADER), 1, inptr);
+        	fsetpos(inptr, &chunk_ptr);	
+			
+			// Break if start of new jpeg
+			if(isJpgSignature(header)){
+				break;
+			}
+		}
+	}
 }
 
 // Scan file from given pointer until it can find jpg signature.
 // Returns the position of the start of the Jpg signature if found.
 // If not found, then return EOF pointer.
-long int findJpgSignature (FILE *ptr){
+// Always resets ptr to original position from when it was called
+fpos_t findJpgSignature (FILE *ptr){
 	
 	// Initialize ptrs
-	long int original_ptr = ftell(ptr);
-	long int jpg_header_ptr = original_ptr;  
+	fpos_t original_ptr;
+	fpos_t jpg_header_ptr;
+	fgetpos(ptr, &original_ptr);
+	jpg_header_ptr = original_ptr;
 	
     // Temporary storage for header
     JPG_HEADER header;
 	
 	// Scan through input file until find a jpg signature
-	while(true) {
+	// If EOF return ptr immediately
+	while(!feof(ptr)) {
 		
-        // Read in a jpg_header to test if valid
+        // Read in a jpg_header and reset ptr to jpg start position
 		fread(&header, sizeof(JPG_HEADER), 1, ptr);
-		
-		// If 1st byte is EOF return call
-		if(header.byte_1 == EOF) {
-		
-			// Set read file pointer back to original position
-            fsetpos(ptr, original_ptr);	
-			return EOF;
-        }
+        fsetpos(ptr, &jpg_header_ptr);	
 
 		// Return ptr value if jpg signature found
 		if(isJpgSignature(header)) {
-			
-            // Set read file pointer back to original position
-            fsetpos(ptr, original_ptr);
-
-            // return the jpg signature ptr
+			fsetpos(ptr, &original_ptr);
 			return jpg_header_ptr;
 		}
 
         // Move to next FAT Block if jpg signature not found
 		else {
-			fseek(ptr, FAT_BLOCK_SIZE - sizeof(JPG_HEADER), SEEK_CUR);
-			jpg_header_ptr = ftell(ptr);
+			fseek(ptr, FAT_BLOCK_SIZE, SEEK_CUR);
+			fsetpos(ptr, &jpg_header_ptr);
 		}
 	}
+
+	fsetpos(ptr, &original_ptr);
+	return original_ptr;
 }
 
 // Define if a given set of 4 bytes is a jpg signature
@@ -198,15 +202,14 @@ char* createFilename(int i, char* extension){
 	
 	char *filename = NULL;
 	// Assuming only storing up to 999 files, create filename
-	if (i > 99){
-		filename = itoa(i, filename, 3);
-	}
-	else if(i > 9){
-		filename = strcat("0", itoa(i, filename, 2));
-	}
-	else{
-		filename = strcat("00", itoa(i, filename, 1));
-	}
+	snprintf(filename, 4, "%i", i);
 
+	if(i < 10) {
+		strcat("00", filename);
+	}
+	else if (i < 100) {
+		strcat("0", filename);
+	}
+	
 	return strcat(filename, extension);
 }
