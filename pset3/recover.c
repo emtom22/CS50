@@ -58,7 +58,7 @@ char* createFilename(int i, char* extension);
 
 int main(int argc, char *argv[])
 {	
-	int file_num = 0; // Keep track of number of jpgs found
+	int file_num = 93; // Keep track of number of jpgs found
 
 	// Ensure proper usage of function
 	if (argc != 2)
@@ -99,7 +99,8 @@ int main(int argc, char *argv[])
 		// fsetpos(inptr, &jpg_start); 
         
 		// Create filename to output jpg file
-		char *outfile = createFilename(file_num, ".jpg");
+		char *outfile = createFilename(file_num, "jpg");
+		printf("outfilename %s", outfile);
 		FILE *outptr = fopen(outfile, "w");	
 		file_num++; // increment file number count
 		
@@ -147,14 +148,12 @@ fpos_t findJpgSignature (FILE *ptr){
 	fgetpos(ptr, &original_ptr);
 	jpg_header_ptr = original_ptr;
 	
-    // Temporary storage for header
-    JPG_HEADER header;
-	
 	// Scan through input file until find a jpg signature
 	// If EOF return ptr immediately
 	while(!feof(ptr)) {
 		
         // Read in a jpg_header and reset ptr to jpg start position
+		JPG_HEADER header;
 		fread(&header, sizeof(JPG_HEADER), 1, ptr);
         fsetpos(ptr, &jpg_header_ptr);	
 
@@ -167,7 +166,7 @@ fpos_t findJpgSignature (FILE *ptr){
         // Move to next FAT Block if jpg signature not found
 		else {
 			fseek(ptr, FAT_BLOCK_SIZE, SEEK_CUR);
-			fsetpos(ptr, &jpg_header_ptr);
+			fgetpos(ptr, &jpg_header_ptr);
 		}
 	}
 
@@ -177,6 +176,13 @@ fpos_t findJpgSignature (FILE *ptr){
 
 // Define if a given set of 4 bytes is a jpg signature
 bool isJpgSignature(JPG_HEADER header) {
+	printf("int 0xff = %d\n", 0xff);
+	printf("byte1 = %d\n", header.byte_1);
+	printf("byte3 = %d\n\n", header.byte_3);
+
+	printf("int 0xd8 = %d\n", 0xd8);
+	printf("byte2 = %d\n", header.byte_2);
+	printf("***************************\n");
 	// See if first 3 are good
 	if(header.byte_1 == 0xff && header.byte_2 == 0xd8 &&
 		header.byte_3 == 0xff) 
@@ -198,18 +204,27 @@ bool isJpgSignature(JPG_HEADER header) {
 }
 
 // Creates a numbered filename with a given number and extension
+// extension does not include the '.' character
 char* createFilename(int i, char* extension){
 	
-	char *filename = NULL;
-	// Assuming only storing up to 999 files, create filename
-	snprintf(filename, 4, "%i", i);
 
+	int file_len = 6 + strlen(extension);
+	char filename[file_len];
+	// Assuming only storing up to 999 files, create filename
+	snprintf(filename, file_len, "%i", i);
 	if(i < 10) {
-		strcat("00", filename);
+		snprintf(filename, file_len, "00%i.%s", i, extension);	
 	}
+
 	else if (i < 100) {
-		strcat("0", filename);
+		snprintf(filename, file_len, "0%i.%s", i, extension);
 	}
+	else {
+		snprintf(filename, file_len, "%i.%s", i, extension);
+	}
+
+	printf("filename is %s", filename);
 	
-	return strcat(filename, extension);
+	return filename;
+	
 }
