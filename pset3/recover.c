@@ -99,17 +99,15 @@ int main(int argc, char *argv[])
 		// fsetpos(inptr, &jpg_start); 
         
 		// Create filename to output jpg file
-		char *outfile = createFilename(file_num, "jpg");
-		printf("outfilename %s", outfile);
+		// char *outfile = createFilename(file_num, "jpg");
+		char *outfile = "test.jpg";
 		FILE *outptr = fopen(outfile, "w");	
-		file_num++; // increment file number count
-		
-		// Error check the output file is valid
 		if (outptr == NULL) {
 			fclose(inptr);
 			printf("Could not create %s.\n", outfile);
 			return 3;
 		}
+		file_num++; // increment file number count
 
         // Write jpg FAT blocks to output file until EOF or start of new jpeg
 		while (!feof(inptr)) 
