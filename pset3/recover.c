@@ -54,11 +54,12 @@ FAT_BLOCK;
 // Method definitions
 fpos_t findJpgSignature (FILE *ptr);
 bool isJpgSignature(JPG_HEADER header);
-char* createFilename(int i, char* extension);
+bool isEOF(JPG_HEADER header);
+char* createFilename(int i, char* filename);
 
 int main(int argc, char *argv[])
 {	
-	int file_num = 93; // Keep track of number of jpgs found
+	int file_num = 0; // Keep track of number of jpgs found
 
 	// Ensure proper usage of function
 	if (argc != 2)
@@ -76,31 +77,22 @@ int main(int argc, char *argv[])
     }
 	
 	// Initialize jpg start
-	fpos_t jpg_start;
-	
-	// // Move forward 1 FAT block to not get the same jpg signature
-	// fseek(inptr, FAT_BLOCK_SIZE, SEEK_CUR);
-	
-	// // Find the 2nd jpg header signature (aka end of 1st jpg header)
-	// fpos_t jpg_end = findJpgSignature(inptr);
-	
-	// // Move back 1 FAT block to go to beginning of first jpg
-	// fseek(inptr, -FAT_BLOCK_SIZE, SEEK_CUR);
+	fpos_t jpg_start = findJpgSignature(inptr);
+	fsetpos(inptr, &jpg_start);
 
 	// Iterate through file to find all the jpgs until EOF		
 	while (!feof(inptr)) {
 
 		// Find jpg and store ptr
 		jpg_start = findJpgSignature(inptr);
-
-		// Set file ptr to start of jpg
-		// shouldn't need to set to start because it already is the start
-		// after finding the jpg
-		// fsetpos(inptr, &jpg_start); 
         
 		// Create filename to output jpg file
-		// char *outfile = createFilename(file_num, "jpg");
-		char *outfile = "test.jpg";
+		char *extension = "jpg";
+		char outfile[5 + strlen(extension)];
+		strcpy(outfile, createFilename(file_num, "jpg"));
+
+		printf("filename: %s\n", outfile);
+
 		FILE *outptr = fopen(outfile, "w");	
 		if (outptr == NULL) {
 			fclose(inptr);
@@ -108,30 +100,43 @@ int main(int argc, char *argv[])
 			return 3;
 		}
 		file_num++; // increment file number count
-
+		
+		
         // Write jpg FAT blocks to output file until EOF or start of new jpeg
-		while (!feof(inptr)) 
-		{	
+		int counter = 0;
+		while (!feof(inptr)) {	
+		// do {
+			
 			// Write in FAT_BLOCK size chunks  
 			FAT_BLOCK chunk;
-			JPG_HEADER header;
 			fpos_t chunk_ptr;
+			JPG_HEADER header;
 
 			fread(&chunk, FAT_BLOCK_SIZE, 1, inptr);
 	    	fwrite(&chunk, FAT_BLOCK_SIZE, 1, outptr);
 
-			
 			// Read in a jpg_header and reset ptr to original position
 			fgetpos(inptr, &chunk_ptr); 
 			fread(&header, sizeof(JPG_HEADER), 1, inptr);
         	fsetpos(inptr, &chunk_ptr);	
+			counter++;
 			
 			// Break if start of new jpeg
-			if(isJpgSignature(header)){
+			if (isJpgSignature(header)) {
+				fclose(outptr);
 				break;
 			}
-		}
+
+			// if (isEOF(header)) {
+			// 	fclose(outptr);
+			// 	break;
+			// }
+			
+		} // while (!isEOF(header));
+
+		// fclose(outptr);
 	}
+	fclose(inptr);
 }
 
 // Scan file from given pointer until it can find jpg signature.
@@ -174,14 +179,8 @@ fpos_t findJpgSignature (FILE *ptr){
 
 // Define if a given set of 4 bytes is a jpg signature
 bool isJpgSignature(JPG_HEADER header) {
-	printf("int 0xff = %d\n", 0xff);
-	printf("byte1 = %d\n", header.byte_1);
-	printf("byte3 = %d\n\n", header.byte_3);
 
-	printf("int 0xd8 = %d\n", 0xd8);
-	printf("byte2 = %d\n", header.byte_2);
-	printf("***************************\n");
-	// See if first 3 are good
+	// // See if first 3 are good
 	if(header.byte_1 == 0xff && header.byte_2 == 0xd8 &&
 		header.byte_3 == 0xff) 
 	{
@@ -201,15 +200,28 @@ bool isJpgSignature(JPG_HEADER header) {
 	return false;
 }
 
+bool isEOF(JPG_HEADER header) {
+	// // See if first 3 are good
+	if(header.byte_1 == 0x00 && header.byte_2 == 0x00 &&
+		header.byte_3 == 0x00 && header.byte_4 == 0x00) 
+	{
+		return true;
+	}
+	return false;
+}
+
 // Creates a numbered filename with a given number and extension
-// extension does not include the '.' character
+// the filename parameter should be the ext of the file omitting the '.' character
 char* createFilename(int i, char* extension){
 	
 
-	int file_len = 6 + strlen(extension);
+	int file_len = 5 + strlen(extension);
 	char filename[file_len];
+	
 	// Assuming only storing up to 999 files, create filename
 	snprintf(filename, file_len, "%i", i);
+	
+
 	if(i < 10) {
 		snprintf(filename, file_len, "00%i.%s", i, extension);	
 	}
