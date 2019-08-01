@@ -80,8 +80,9 @@ int main(int argc, char *argv[])
 	fpos_t jpg_start = findJpgSignature(inptr);
 	fsetpos(inptr, &jpg_start);
 
-	// Iterate through file to find all the jpgs until EOF		
-	while (!feof(inptr)) {
+	// Iterate through file to find all the jpgs until EOF	
+	bool isEOF = false;	
+	while (!isEOF) {
 
 		// Find jpg and store ptr
 		jpg_start = findJpgSignature(inptr);
@@ -103,38 +104,34 @@ int main(int argc, char *argv[])
 		
 		
         // Write jpg FAT blocks to output file until EOF or start of new jpeg
-		int counter = 0;
 		while (!feof(inptr)) {	
-		// do {
 			
 			// Write in FAT_BLOCK size chunks  
 			FAT_BLOCK chunk;
 			fpos_t chunk_ptr;
 			JPG_HEADER header;
-
-			fread(&chunk, FAT_BLOCK_SIZE, 1, inptr);
+			
+			// fread returns 0 if it cannot read the defined block of memory, meaning EOF
+			size_t size = fread(&chunk, FAT_BLOCK_SIZE, 1, inptr); 
+			
 	    	fwrite(&chunk, FAT_BLOCK_SIZE, 1, outptr);
-
-			// Read in a jpg_header and reset ptr to original position
-			fgetpos(inptr, &chunk_ptr); 
+			fgetpos(inptr, &chunk_ptr);
 			fread(&header, sizeof(JPG_HEADER), 1, inptr);
         	fsetpos(inptr, &chunk_ptr);	
-			counter++;
 			
 			// Break if start of new jpeg
-			if (isJpgSignature(header)) {
+			if (isJpgSignature(header)){
 				fclose(outptr);
 				break;
 			}
 
-			// if (isEOF(header)) {
-			// 	fclose(outptr);
-			// 	break;
-			// }
-			
-		} // while (!isEOF(header));
-
-		// fclose(outptr);
+			// Break out of entire program if EOF
+			if (size == 0) {
+				isEOF = true;
+				fclose(outptr);
+				break;
+			}
+		}
 	}
 	fclose(inptr);
 }
@@ -142,7 +139,7 @@ int main(int argc, char *argv[])
 // Scan file from given pointer until it can find jpg signature.
 // Returns the position of the start of the Jpg signature if found.
 // If not found, then return EOF pointer.
-// Always resets ptr to original position from when it was called
+// Always rfsetpos(inptr, &chunk_ptr);	resets ptr to original position from when it was called
 fpos_t findJpgSignature (FILE *ptr){
 	
 	// Initialize ptrs
@@ -232,9 +229,5 @@ char* createFilename(int i, char* extension){
 	else {
 		snprintf(filename, file_len, "%i.%s", i, extension);
 	}
-
-	printf("filename is %s", filename);
-	
 	return filename;
-	
 }
