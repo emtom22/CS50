@@ -1,4 +1,3 @@
-
 /*
 Implement load, size, check, and unload as efficiently as possible using
 a hash table in such a way that TIME IN load, TIME IN check,
