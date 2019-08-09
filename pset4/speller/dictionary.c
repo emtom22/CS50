@@ -77,19 +77,19 @@ bool load(const char *dictionary)
         node *header;
         header = malloc(sizeof(node));
 
-        // If bucket is null then initialze linked list
+        // If bucket is null then initialize linked list
         // Else add to front of existing linked list
-        if(hashtable[h] == NULL) {
+        if (hashtable[h] == NULL) {
 			hashtable[h] = header;
+			hashtable[h]->next = NULL;
 		}
-		else {
-			hashtable[h]->next = hashtable[h];
-			hashtable[h] = header;
-		}
-		strcpy(hashtable[h]->word, word);
 
-        // It is assumed that all dictionaries loaded are alphabetized and lower case
-        // Therefore, will do a binary search to sort into hash tables.
+		else {
+			header->next = hashtable[h];
+			hashtable[h] = header;
+		}
+
+		strcpy(hashtable[h]->word, word);
     }
 
     // Close dictionary
