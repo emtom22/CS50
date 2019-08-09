@@ -3,6 +3,7 @@
 #include <ctype.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "dictionary.h"
 
@@ -70,6 +71,16 @@ unsigned int size(void)
 bool check(const char *word)
 {
     // TODO
+
+    // Convert word to lower case
+	char word_lower[strlen(word)];
+	int i = 0;
+	while (word[i]) {
+		word_lower[i] = tolower(word[i]);
+		i++;
+	}
+    
+    // Try to find word in dictionary
     return false;
 }
 
