@@ -70,17 +70,26 @@ bool load(const char *dictionary)
     // Insert words into hash table
     while (fscanf(file, "%s", word) != EOF)
     {
-        // TODO
-        hash(word);
+        // Get hash bucket
+        int h = hash(word);
 
-        // if new,then add a new header
-        // if not then, add to existing linked list
+        // Create a node
+        node *header;
+        header = malloc(sizeof(node));
+
+        // If bucket is null then initialze linked list
+        // Else add to front of existing linked list
+        if(hashtable[h] == NULL) {
+			hashtable[h] = header;
+		}
+		else {
+			hashtable[h]->next = hashtable[h];
+			hashtable[h] = header;
+		}
+		strcpy(hashtable[h]->word, word);
 
         // It is assumed that all dictionaries loaded are alphabetized and lower case
         // Therefore, will do a binary search to sort into hash tables.
-
-
-        // REMEMBER THAT DICTIONARY IS SORTED ALPHABETICALLY
     }
 
     // Close dictionary
