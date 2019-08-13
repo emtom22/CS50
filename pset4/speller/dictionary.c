@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "dictionary.h"
 
@@ -22,18 +23,6 @@ node;
 
 // Represents a hash table
 node *hashtable[N];
-
-node createNode(void);
-
-// Helper function to create a node for linked list 
-node createNode(void)
-{
-    node *n = malloc(sizeof(node));
-    if (n == NULL) {
-        return NULL;
-    }
-    return n;
-}
 
 // Hashes word to a number between 0 and 703, inclusive, based on combinations of first 2 letters 
 // This assumes that 1st is alpha and 2nd is alpha or apostrophe
@@ -134,18 +123,17 @@ unsigned int size(void)
 bool check(const char *word)
 {
     // Convert word to lower case
-	char word_lower[strlen(word)];
-	int i = 0;
-	while (word[i]) {
+    int len = strlen(word) + 1;
+	char word_lower[len];
+	for(int i = 0; i < len; i++){
 		word_lower[i] = tolower(word[i]);
-		i++;
 	}
 
     // Find what bucket in hashtable to search for word existence
     node *cursor = hashtable[hash(word_lower)];
 
     while(cursor != NULL){
-        if(strcmp(cursor->word, word) == 0){
+        if(strcmp(cursor->word, word_lower) == 0){
             return true;
         }
         cursor = cursor->next;
@@ -154,7 +142,6 @@ bool check(const char *word)
     // If not found in hashtable then word is not found
     return false;
 }
-
 // Unloads dictionary from memory, returning true if successful else false
 bool unload(void)
 {
