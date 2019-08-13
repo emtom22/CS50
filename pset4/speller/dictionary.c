@@ -23,6 +23,18 @@ node;
 // Represents a hash table
 node *hashtable[N];
 
+node createNode(void);
+
+// Helper function to create a node for linked list 
+node createNode(void)
+{
+    node *n = malloc(sizeof(node));
+    if (n == NULL) {
+        return NULL;
+    }
+    return n;
+}
+
 // Hashes word to a number between 0 and 703, inclusive, based on combinations of first 2 letters 
 // This assumes that 1st is alpha and 2nd is alpha or apostrophe
 // also add an extra bucket for 1 letter words
@@ -74,22 +86,25 @@ bool load(const char *dictionary)
         int h = hash(word);
 
         // Create a node
-        node *header;
-        header = malloc(sizeof(node));
+        node *header = malloc(sizeof(node));
+        if (header == NULL){
+            printf("Could not create node.\n");
+            fclose(file);
+            unload();
+            return false;
+        }
+        strcpy(header->word, word);
 
         // If bucket is null then initialize linked list
-        // Else add to front of existing linked list
+        // Else add new entry to front of existing linked list
         if (hashtable[h] == NULL) {
 			hashtable[h] = header;
 			hashtable[h]->next = NULL;
 		}
-
 		else {
 			header->next = hashtable[h];
 			hashtable[h] = header;
 		}
-
-		strcpy(hashtable[h]->word, word);
     }
 
     // Close dictionary
@@ -109,8 +124,6 @@ unsigned int size(void)
 // Returns true if word is in dictionary else false
 bool check(const char *word)
 {
-    // TODO
-
     // Convert word to lower case
 	char word_lower[strlen(word)];
 	int i = 0;
@@ -118,8 +131,18 @@ bool check(const char *word)
 		word_lower[i] = tolower(word[i]);
 		i++;
 	}
-    
-    // Try to find word in dictionary
+
+    // Find what bucket in hashtable to search for word existence
+    node *cursor = hashtable[hash(word_lower)];
+
+    while(cursor != NULL){
+        if(strcmp(cursor->word, word) == 0){
+            return true;
+        }
+        cursor = cursor->next;
+    }
+
+    // If not found in hashtable then word is not found
     return false;
 }
 
