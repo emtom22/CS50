@@ -149,6 +149,23 @@ bool check(const char *word)
 // Unloads dictionary from memory, returning true if successful else false
 bool unload(void)
 {
-    // TODO
-    return false;
+    // Only unload dictinary buckets that have values in them (i.e. non-NULL)
+    for(int i = 0; i < N; i++) {
+        if(hashtable[i] != NULL){
+            freeList(hashtable[i]);
+            free(hashtable[i]);
+        }
+    }
+    return true;
+}
+
+// Recursive function to free all nodes in a linked list
+bool freeList(node *n){
+    if(n->next == NULL){
+        free(n);
+        return true;
+    }
+    freeList(n->next);
+    n->next = NULL;
+    free(n);
 }
