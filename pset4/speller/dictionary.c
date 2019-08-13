@@ -117,8 +117,17 @@ bool load(const char *dictionary)
 // Returns number of words in dictionary if loaded else 0 if not yet loaded
 unsigned int size(void)
 {
-    // TODO
-    return 0;
+    int num_words = 0;
+    for(int i = 0; i < N; i++) {
+        node *cursor = hashtable[i];
+        if(cursor != NULL) {
+            while(cursor != NULL) {
+                num_words++;
+                cursor = cursor->next;
+            }
+        }
+    }
+    return num_words;
 }
 
 // Returns true if word is in dictionary else false
