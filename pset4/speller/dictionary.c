@@ -151,21 +151,37 @@ bool unload(void)
 {
     // Only unload dictinary buckets that have values in them (i.e. non-NULL)
     for(int i = 0; i < N; i++) {
-        if(hashtable[i] != NULL){
-            freeList(hashtable[i]);
-            free(hashtable[i]);
+        if(hashtable[i] != NULL) {
+            while(hashtable[i] != NULL) {
+                node *cursor_old = hashtable[i];
+                hashtable[i]= hashtable[i]->next;
+                cursor_old = NULL;
+                free(cursor_old);
+            }
         }
     }
     return true;
 }
 
-// Recursive function to free all nodes in a linked list
-bool freeList(node *n){
-    if(n->next == NULL){
-        free(n);
-        return true;
-    }
-    freeList(n->next);
-    n->next = NULL;
-    free(n);
-}
+// bool unload(void)
+// {
+//     // Only unload dictinary buckets that have values in them (i.e. non-NULL)
+//     for(int i = 0; i < N; i++) {
+//         if(hashtable[i] != NULL){
+//             freeList(hashtable[i]);
+//             free(hashtable[i]);
+//         }
+//     }
+//     return true;
+// }
+
+// // Recursive function to free all nodes in a linked list
+// bool freeList(node *n){
+//     if(n->next == NULL){
+//         free(n);
+//         return true;
+//     }
+//     freeList(n->next);
+//     n->next = NULL;
+//     free(n);
+// }
