@@ -4,6 +4,7 @@
     <head>
         <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet">
         <link href="styles.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <title>Auto Image</title>
 
@@ -13,29 +14,54 @@
 
     </head>
     <body>
-            <img class="slides" src="https://media.giphy.com/media/weL00rTCOSgAo/giphy.gif" style="width:100%">
-            <!--
-            <img class="slides" src="https://www.technocrazed.com/wp-content/uploads/2015/12/BMW-Wallpaper-HD-11.jpg" style="width:100%">
-            -->
-            <script>
-                    var myIndex = 0;
-                    carousel();
-                    
-                    function carousel() {
-                      var i;
-                      var x = document.getElementsByClassName("slides");
-                      for (i = 0; i < x.length; i++) {
-                        x[i].style.display = "none";  
-                      }
-                      myIndex++;
-                      // if (myIndex > x.length) {myIndex = 1}    
-                      x[myIndex-1].style.display = "block";  
-                      setTimeout(carousel, 2000); // Change image every 2 seconds
-                    }
-                    </script>
+        
+
+        <!-- Make Carasoul of images overlaying with words or button -->
+        <!-- <div class="w3-content w3-display-container">
+
+            <div class="w3-display-container mySlides">
+                <img src="https://media.giphy.com/media/weL00rTCOSgAo/giphy.gif" style="width:100%">
+                <div class="w3-display-bottomleft w3-large w3-container w3-padding-16 w3-black">
+                French Alps
+                </div>
+            </div>
+            
+            <div class="w3-display-container mySlides">
+                <img src="https://66.media.tumblr.com/bffa10e60a587f6baac268e5dd6a1de1/tumblr_mxq0o0p89j1sh4q2jo2_500.gif" style="width:100%">
+                <div class="w3-display-bottomright w3-large w3-container w3-padding-16 w3-black">
+                Northern Lights
+                </div>
+            </div>
+        </div> -->
+        <!-- Link for if you want to keep the last image  -->
+        <!-- https://stackoverflow.com/questions/30934759/how-to-stop-css-image-slideshow-at-last-image -->
+
+        <script>
+            var myIndex = 0;
+            carousel();
+            
+            function carousel() {
+                var i;
+                var x = document.getElementsByClassName("mySlides");
+                for (i = 0; i < x.length; i++) {
+                x[i].style.display = "none";  // this defines where on the page it goes?
+                }
+                myIndex++;
+                // if (myIndex > x.length) {myIndex = 1}    
+                x[myIndex-1].style.display = "flex";  // this defines what is seen?
+                setTimeout(carousel, 2500); // Change image every 2 seconds
+            }
+        </script>
     
         <div class="jumbotron text-center">
-        
+
+        <!--To switch between gif and static-->
+        <!-- This is very easy. If you are using photoshop, just under the timeline there 
+        should be a box with an available dropdown and the text says "forever". Click that and 
+        the dropdown box should open up and then just click "once", then it should only go through the 
+        animation one time. -->
+       
+
             <h1>My First Bootstrap Page</h1>
             <p>Resize this responsive page to see the effect!</p> 
         </div>
