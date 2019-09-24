@@ -1,0 +1,65 @@
+.fa-facebook{
+  color: 3b5998;
+}
+
+.fa-instagram{
+  color: ffffff;
+}
+
+.fa-yelp{
+  color: af0606;
+}
+
+.card-gather{
+  /* background-color: red; */
+}
+.card-faded{
+  opacity: 0.4;
+  filter: alpha(opacity=40); /* For IE8 and earlier */
+  /* background-size: 100% 100%; */
+}
+
+.card-faded:hover{
+  opacity: 1.0;
+  filter: alpha(opacity=100); /* For IE8 and earlier */
+}
+
+.toggle-button{
+  /* background-color: black; */
+  background-image: url("../assets/logo.png");
+  background-size: 100% 100%;
+
+  /* color: black; */
+}
+
+/* @media(min-width:576px){ */
+  #above-fold{
+    height: 500px;
+    background: url("../assets/game-parlour.jpg");
+    background-size: 100% 100%;
+  }
+/* } */
+ 
+@media(min-width:900px){
+  #above-fold{
+    height: 700px;
+    background: url("../assets/game-parlour-wall.jpg");
+    background-size: 100% 100%;
+  }
+}
+.position-absolute {
+  bottom: 10%;
+  margin-left: auto;
+  margin-right: auto;
+  left: 0;
+  right: 0;
+}
+/* .test {
+  position: relative;
+  bottom: 0;
+  /* margin-top: 20%; */
+  margin-left: auto;
+  margin-right: auto;
+  left: 0;
+  right: 0;
+} */
