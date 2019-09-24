@@ -1,0 +1,174 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <title>Bootstrap 4 Starter Template</title>
+    <!-- My own CSS Sheets -->
+    <link rel="stylesheet" href="css/contact-styles.css">
+
+    <!-- Social Medi Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <!-- font type -->
+    <link rel="stylesheet" type="text/css"
+        href="//fonts.googleapis.com/css?family=Carrois+Gothic+SC:400|Oswald:700,400" />
+
+    <!-- SEO Metadata -->
+    <meta name="keywords" content="inventory management, sku management, sku, syncing, synching, cross channel inventory management,
+        inventory management for small businesses, simple inventory management" />
+    <meta name="description" content="Afforable Inventory Management for Everyone" />
+
+</head>
+
+<body>
+
+    <!-- Sign in for existing user -->
+    <div class="container-fluid" id="login">
+        <h1>Login Page</h1>
+        <form>
+            <div class="form-group row">
+                <label for="email-login" class="col-sm-2 col-form-label">Email</label>
+                <div class="col-auto">
+                    <input type="email" class="form-control" id="email-login" placeholder="example@email.com">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="pw-login" class="col-sm-2 col-form-label">Password</label>
+                <div class="col-auto">
+                    <input type="password" class="form-control" id="pw-login" placeholder="Password">
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary" id="login-btn">Login</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- New user -->
+    <div class="container-fluid" id="signup">
+        <h1>Sign-up Page</h1>
+        <form>
+
+            <div class="form-group row">
+                <label for="userEmail" class="col-sm-2 col-form-label">Name</label>
+                <div class="col-auto">
+                    <input type="text" class="form-control" id="firstName" placeholder="First">
+                </div>
+                <div class="col-auto">
+                    <input type="text" class="form-control" id="lastName" placeholder="Last">
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label for="email-signup" class="col-sm-2 col-form-label">Email</label>
+                <div class="col-auto">
+                    <input type="email" class="form-control" id="email-signup" placeholder="example@email.com">
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label for="phone-signup" class="col-sm-2 col-form-label">Phone Number</label>
+                <div class="col-auto">
+                    <input type="text" class="form-control" id="phone-signup" placeholder="888-123-4567">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="company-signup" class="col-sm-2 col-form-label">Company Name</label>
+                <div class="col-auto">
+                    <input type="text" class="form-control" id="company-signup" placeholder="Inventoroo">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="industry-signup">Company Industry</label>
+                <select class="col-auto" id="industry-signup">
+                    <option selected disabled>Choose...</option>
+                    <option value="industry-food">Food Services</option>
+                    <option value="industry-agri">Agriculture</option>
+                    <option value="industry-arts">Arts/Entertainment/Recreation</option>
+                    <option value="industry-constr">Construction</option>
+                    <option value="industry-edu">Education Services</option>
+                    <option value="industry-fi">Finance/Insurance</option>
+                    <option value="industry-health">Healthcare/Social Services</option>
+                    <option value="industry-manf">Manufacturing</option>
+                    <option value="industry-trade">Wholesale Trade</option>
+                    <option value="industry-pubadmin">Public Administration</option>
+                    <option value="industry-tech">Technology</option>
+                    <option value="industry-other">Other</option>
+                </select>
+            </div>
+            <div class="form-group row">
+                <label for="est-year-sales-signup" class="col-sm-2 col-form-label">Estimated Yearly Sales</label>
+                <div class="col-auto">
+                    <input type="text" class="form-control" id="est-year-sales-signup" placeholder="$1000">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="channel-signup">How'd you find us?</label>
+                <select class="col-auto" id="channel-signup">
+                    <option selected disabled>Choose...</option>
+                    <option value="channel-person">Friend/Family</option>
+                    <option value="channel-fair">Meetup/Fair/Gathering</option>
+                    <option value="channel-web">Online Search</option>
+                    <option value="channel-other">Other</option>
+
+                </select>
+            </div>
+            <div class="form-group row">
+                <label for="pw-signup" class="col-sm-2 col-form-label">Password</label>
+                <div class="col-auto">
+                    <input type="password" class="form-control" id="pw-signup" placeholder="Password">
+                </div>
+                <small id="passwordHelpBlock" class="form-text text-muted">
+                    Your password must be 8-20 characters long, and must contain at least a uppercase letter,
+                    lowercase letter, number and special character.
+                </small>
+            </div>
+            <div class="form-group row">
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary" id="signup-btn">New Sign Up</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <!--
+    other login pages
+    Pricing:
+    click a tier
+    credit card
+    paypal
+
+    Buttons:
+    existing user
+    Login
+    Sign up
+    -->
+    </div>
+
+
+    <!-- Optional JavaScript -->
+
+
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous">
+    </script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous">
+    </script>
+
+    <!-- My own JavaScript -->
+    <script src="js/script.js"></script>
+</body>
